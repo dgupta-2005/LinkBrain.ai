@@ -1,7 +1,21 @@
+# Web Framework & Server
 fastapi[standard]
 uvicorn
-python-telegram-bot
-google-generativeai
 jinja2
-python-dotenv
+
+# Database & ORM
 sqlmodel
+
+# Security & Authentication (Based on your auth.py imports)
+bcrypt
+pyjwt
+passlib[bcrypt]
+python-multipart
+
+# AI & External APIs
+google-generativeai
+python-telegram-bot
+
+# Utilities & Environment
+python-dotenv
+requests
