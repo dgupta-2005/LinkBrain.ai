@@ -15,7 +15,7 @@ Capture interesting content from Instagram, Twitter/X, YouTube, and the wider we
 ## 🚀 Features
 
 - **Instant Capture**: Save any link by simply messaging it to our integrated Telegram Bot (**bunnyBot**).
-- **AI-Powered Summarization**: Uses **Google Gemini 1.5 Flash (and 2.0/2.5 Previews)** to generate concise, 1-sentence summaries and categorytags.
+- **AI-Powered Summarization**: Uses **Google Gemini 1.5 Flash (and 2.0/2.5 Previews)** to generate concise, 1-sentence summaries and category tags.
 - **Smart Categorization**: Automatically detects platforms like Instagram, Twitter, and YouTube.
 - **Custom Buckets**: Create your own dedicated platform containers (e.g., "LinkedIn", "Medium") dynamically from the dashboard.
 - **Chronological Sorting**: Toggle between "Newest Added" and "Oldest Added" to find exactly what you need.
