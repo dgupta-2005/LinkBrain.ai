@@ -20,7 +20,7 @@ Capture interesting content from Instagram, Twitter/X, YouTube, and the wider we
 - **Custom Buckets**: Create your own dedicated platform containers (e.g., "LinkedIn", "Medium") dynamically from the dashboard.
 - **Chronological Sorting**: Toggle between "Newest Added" and "Oldest Added" to find exactly what you need.
 - **Full-Text Search**: Instantly filter through your entire link collection using keywords, summaries, or categories.
-- **Premium Glassmorphic UI**: A stunning, vibrant light-mode dashboard built for clarity and visual excellence (VIBE CODED).
+- **Premium Glassmorphic UI ((VIBE CODED))**: A stunning, vibrant light-mode dashboard built for clarity and visual excellence.
 - **Secure Authentication**: JWT-based user accounts with encrypted link codes for Telegram pairing.
 
 ---
