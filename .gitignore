@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets and Environment Variables
+# CRITICAL: Do not ever commit your .env file containing the Telegram or Gemini API keys!
+.env
+.env.*
+
+# Local Databases 
+*.db
+*.sqlite
+*.sqlite3
+database_v2.db
+
+# Logs and debug files
+*.log
+available_models.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db

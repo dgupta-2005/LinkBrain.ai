@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkBrain.ai Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(28,100%,74%,0.15) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(189,100%,56%,0.15) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,100%,74%,0.15) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+        .glass-card {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans selection:bg-brand-500 selection:text-white">
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <header class="flex flex-col mb-12 gap-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
+            <div>
+                <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-500 to-purple-500">
+                    LinkBrain.ai
+                </h1>
+                <p class="text-slate-500 mt-2 font-medium">Your AI-powered knowledge base from social media.</p>
+            </div>
+            
+            <div class="glass-card bg-white/60 px-6 py-3 rounded-xl flex items-center justify-between gap-6 border-brand-500/20">
+                <div>
+                    <p class="text-xs text-slate-500 mb-1 uppercase tracking-widest font-semibold">Logged in as</p>
+                    <p class="text-sm font-bold text-slate-800">{{ user.username }}</p>
+                </div>
+                <div class="h-8 w-px bg-slate-200"></div>
+                <a href="/logout" class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors">Sign Out</a>
+            </div>
+        </div>
+
+        <!-- Telegram Connection Banner -->
+        <div class="glass-card p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-white to-slate-50 border-l-4 border-l-brand-500 shadow-sm border border-slate-200">
+                <div class="mb-4 sm:mb-0 pr-4">
+                    <h2 class="text-xl font-bold text-slate-800 mb-2 flex items-center">
+                        Connect your Telegram 🚀
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1 leading-relaxed font-medium">
+                        Message <a href="https://t.me/bunny05_bot" target="_blank" class="bg-blue-100/80 text-blue-600 px-2.5 py-1 rounded-md font-bold hover:bg-blue-200 hover:text-blue-700 transition-colors mx-1 border border-blue-200">bunnyBot</a> with this exact command so it knows to save links to your account.
+                    </p>
+                </div>
+            <div class="bg-slate-100 px-6 py-3 rounded-lg border border-slate-200 shadow-inner">
+                <code class="text-brand-600 font-mono text-xl font-bold select-all tracking-wider">/link {{ user.link_code }}</code>
+            </div>
+        </div>
+        
+        <!-- Search Bar -->
+        <form method="get" action="/" class="w-full relative mt-4">
+            {% if current_platform %}
+            <input type="hidden" name="platform" value="{{ current_platform }}">
+            {% endif %}
+            {% if order and order != 'newest' %}
+            <input type="hidden" name="order" value="{{ order }}">
+            {% endif %}
+            <input type="text" name="q" value="{{ q if q else '' }}" placeholder="Search your saved links by topic, summary, or keyword..." 
+                   class="w-full bg-white/80 border border-slate-200 text-slate-800 font-medium rounded-xl py-4 pl-14 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all placeholder-slate-400 shadow-md text-lg">
+            <svg class="w-6 h-6 text-slate-400 absolute left-5 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            {% if q %}
+            <a href="/?{% if current_platform %}platform={{ current_platform }}&{% endif %}{% if order and order != 'newest' %}order={{ order }}{% endif %}" class="absolute right-5 top-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </a>
+            {% endif %}
+        </form>
+    </header>
+
+    <!-- Controls Row: Platform Filter Buckets & Sort Toggle -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        
+        <div class="flex flex-wrap items-center gap-2 md:gap-3">
+            <a href="/?{% if q %}q={{ q }}&{% endif %}{% if order and order != 'newest' %}order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if not current_platform %}bg-slate-800 text-white border-slate-700{% else %}bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+                <span>All Links</span>
+                <span class="px-2 py-0.5 rounded-full text-xs {% if not current_platform %}bg-slate-700 text-white{% else %}bg-slate-100 text-slate-500{% endif %}">{{ bucket_counts['All Links'] }}</span>
+            </a>
+            <a href="/?platform=Instagram{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'Instagram' %}bg-rose-600 text-white border-rose-500{% else %}bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 hover:text-rose-700{% endif %}">
+                <span>Instagram</span>
+                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'Instagram' %}bg-rose-500 text-white{% else %}bg-rose-200 text-rose-700{% endif %}">{{ bucket_counts['Instagram'] }}</span>
+            </a>
+            <a href="/?platform=Twitter{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'Twitter' or current_platform == 'X' %}bg-slate-800 text-white border-slate-700{% else %}bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200 hover:text-slate-900{% endif %}">
+                <span>Twitter / X</span>
+                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'Twitter' or current_platform == 'X' %}bg-slate-700 text-white{% else %}bg-slate-200 text-slate-600{% endif %}">{{ bucket_counts['Twitter / X'] }}</span>
+            </a>
+            <a href="/?platform=YouTube{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'YouTube' %}bg-red-700 text-white border-red-600{% else %}bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700{% endif %}">
+                <span>YouTube</span>
+                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'YouTube' %}bg-red-600 text-white{% else %}bg-red-200 text-red-700{% endif %}">{{ bucket_counts['YouTube'] }}</span>
+            </a>
+            
+            {% for bucket in custom_buckets %}
+            <a href="/?platform={{ bucket.platform }}{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == bucket.platform %}bg-emerald-600 text-white border-emerald-500{% else %}bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700{% endif %}">
+                <span>{{ bucket.platform }}</span>
+                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == bucket.platform %}bg-emerald-500 text-white{% else %}bg-emerald-200 text-emerald-700{% endif %}">{{ bucket_counts[bucket.platform] }}</span>
+            </a>
+            {% endfor %}
+
+            <a href="/?platform=Others{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'Others' %}bg-amber-500 text-white border-amber-400{% else %}bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100 hover:text-yellow-800{% endif %}">
+                <span>Others</span>
+                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'Others' %}bg-amber-400 text-white{% else %}bg-yellow-200 text-yellow-700{% endif %}">{{ bucket_counts['Others'] }}</span>
+            </a>
+            
+            <form action="/bucket/new" method="POST" class="flex items-center bg-white border border-slate-200 rounded-full pl-3 pr-1 py-1 shadow-sm shrink-0 ml-1 h-[38px] group hover:border-indigo-300 transition-colors">
+                <input type="text" name="platform_name" placeholder="+ new bucket" required class="text-xs border-none focus:ring-0 outline-none bg-transparent w-24 placeholder-slate-400 font-bold text-slate-700 p-0 m-0 leading-none">
+                <button type="submit" class="bg-indigo-50 hover:bg-indigo-500 text-indigo-500 hover:text-white border border-indigo-200 rounded-full w-7 h-7 flex items-center justify-center transition-colors shadow-sm text-sm font-bold ml-1 leading-none pt-0.5">+</button>
+            </form>
+        </div>
+
+        <!-- Sort Toggle -->
+        <div class="flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm shrink-0 h-10">
+            <a href="/?order=newest{% if q %}&q={{ q }}{% endif %}{% if current_platform %}&platform={{ current_platform }}{% endif %}" 
+               class="px-4 py-1 text-sm font-semibold rounded-md transition-all {% if order != 'oldest' %}bg-slate-800 text-white shadow{% else %}text-slate-500 hover:text-slate-800{% endif %}">
+                Newest
+            </a>
+            <a href="/?order=oldest{% if q %}&q={{ q }}{% endif %}{% if current_platform %}&platform={{ current_platform }}{% endif %}" 
+               class="px-4 py-1 text-sm font-semibold rounded-md transition-all {% if order == 'oldest' %}bg-slate-800 text-white shadow{% else %}text-slate-500 hover:text-slate-800{% endif %}">
+                Oldest
+            </a>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    {% if items %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for item in items %}
+            
+            {% set theme = {'card_bg': 'bg-sky-100', 'bg': 'bg-sky-200', 'text': 'text-sky-800', 'border': 'border-sky-300', 'hover_border': 'hover:border-sky-400', 'btn_hover': 'hover:bg-sky-300', 'btn_bg': 'bg-sky-50 text-sky-700', 'main_text': 'text-slate-900', 'sub_text': 'text-slate-600', 'card_border': 'border-sky-200', 'sep': 'border-sky-200'} %}
+            
+            {% if item.platform == 'Instagram' %}
+                {% set theme = {'card_bg': 'bg-pink-100', 'bg': 'bg-pink-200', 'text': 'text-pink-800', 'border': 'border-pink-300', 'hover_border': 'hover:border-pink-400', 'btn_hover': 'hover:bg-pink-300', 'btn_bg': 'bg-pink-50 text-pink-700', 'main_text': 'text-slate-900', 'sub_text': 'text-slate-600', 'card_border': 'border-pink-200', 'sep': 'border-pink-200'} %}
+            {% elif item.platform == 'Twitter' or item.platform == 'X' %}
+                {% set theme = {'card_bg': 'bg-slate-800', 'bg': 'bg-slate-700', 'text': 'text-white', 'border': 'border-slate-600', 'hover_border': 'hover:border-slate-500', 'btn_hover': 'hover:bg-slate-600', 'btn_bg': 'bg-slate-900 text-white', 'main_text': 'text-white', 'sub_text': 'text-slate-300', 'card_border': 'border-slate-700', 'sep': 'border-slate-700'} %}
+            {% elif item.platform == 'YouTube' %}
+                {% set theme = {'card_bg': 'bg-red-800', 'bg': 'bg-red-700', 'text': 'text-white', 'border': 'border-red-600', 'hover_border': 'hover:border-red-500', 'btn_hover': 'hover:bg-red-600', 'btn_bg': 'bg-red-950 text-white', 'main_text': 'text-white', 'sub_text': 'text-red-200', 'card_border': 'border-red-900', 'sep': 'border-red-700'} %}
+            {% endif %}
+
+            <div class="glass-card {{ theme.card_bg }} rounded-2xl p-6 transition-transform hover:-translate-y-1 hover:shadow-2xl duration-300 flex flex-col h-full group border {{ theme.card_border }} {{ theme.hover_border }} relative">
+                
+                <!-- Hover Delete Button -->
+                <form action="/delete/{{ item.id }}" method="POST" class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                    <button type="submit" onclick="return confirm('Are you sure you want to permanently delete this saved link?');" class="text-red-400 hover:text-red-600 p-1.5 bg-white/80 rounded-full hover:bg-white border border-red-100 transition-all shadow-sm" title="Delete Saved Link">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="flex justify-between items-start mb-4 pr-8">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ theme.bg }} {{ theme.text }} border {{ theme.border }} shadow-sm">
+                        {{ item.category }}
+                    </span>
+                    <span class="text-xs {{ theme.sub_text }} font-semibold pt-1">{{ item.created_at.strftime('%b %d, %Y') }}</span>
+                </div>
+                
+                <h3 class="text-xl font-bold {{ theme.main_text }} mb-3 leading-snug">{{ item.summary }}</h3>
+                <p class="text-sm {{ theme.sub_text }} mb-6 line-clamp-3 leading-relaxed font-medium">{{ item.raw_text }}</p>
+                
+                <div class="mt-auto flex items-center justify-between pt-5 border-t {{ theme.sep }}">
+                    <div class="flex items-center space-x-2 {{ theme.main_text }}">
+                        <span class="text-sm font-bold">{{ item.platform }}</span>
+                    </div>
+                    <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center justify-center w-10 h-10 rounded-full {{ theme.btn_bg }} {{ theme.btn_hover }} transition-all transform group-hover:-translate-y-1 shadow-md border hover:border-transparent cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-24 bg-white/60 rounded-3xl border border-dashed border-slate-300 mt-12 shadow-sm">
+            <div class="bg-slate-100 h-24 w-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-800">No saved links yet</h3>
+            <p class="mt-3 text-slate-500 font-medium text-lg max-w-md mx-auto">Once you link your account using the code above, simply send links to your Telegram bot to see them appear here instantly!</p>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

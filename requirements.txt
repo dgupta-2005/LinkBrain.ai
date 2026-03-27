@@ -1,0 +1,7 @@
+fastapi[standard]
+uvicorn
+python-telegram-bot
+google-generativeai
+jinja2
+python-dotenv
+sqlmodel
