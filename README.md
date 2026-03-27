@@ -5,6 +5,12 @@
 Capture interesting content from Instagram, Twitter/X, YouTube, and the wider web via a simple Telegram message, and let AI do the heavy lifting of summarization and categorization.
 
 ---
+[Problem Statement Document of this project](https://drive.google.com/file/d/1O55vG4aR6W3tumOt0jKhPtLfPR8o-tNx/view)
+
+
+[Message bunnyBot here](https://t.me/bunny05_bot)
+
+
 
 ## 🚀 Features
 
