@@ -9,13 +9,12 @@ venv/
 env/
 ENV/
 
-# Secrets and Environment Variables
-# CRITICAL: Do not ever commit your .env file containing the Telegram or Gemini API keys!
+# Secrets and Environment Variables (Don't build your local keys into the image!)
 .env
 .env.*
 env.yaml
 
-# Local Databases 
+# Local Databases (Google Cloud will use Supabase)
 *.db
 *.sqlite
 *.sqlite3
@@ -23,8 +22,13 @@ database_v2.db
 
 # Logs and debug files
 *.log
+err.log
 available_models.txt
 
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Git stuff
+.git
+.gitignore

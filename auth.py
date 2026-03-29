@@ -16,7 +16,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     # bcrypt requires bytes and returns bytes
-    # We decode back to string to save in SQLite easily
+    # I'm decoding back to string to save in SQLite easily
     salt = bcrypt.gensalt()
     hashed_bytes = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed_bytes.decode('utf-8')

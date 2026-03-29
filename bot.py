@@ -78,15 +78,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         else:
             # Fallback: Extract the main word from domain (e.g. towardsdatascience.com -> Towardsdatascience)
             try:
-                main_word = domain.split('.')[0]
+                parts = domain.split('.')
+                # Skip common subdomains like en, m, www
+                if parts[0] in ['www', 'm', 'en', 'hi', 'mobile'] and len(parts) > 1:
+                    main_word = parts[1]
+                else:
+                    main_word = parts[0]
                 platform = main_word.title()
             except Exception:
                 platform = "Web"
         
-        # Analyze with Gemini
+        # Analyzing with Gemini
         ai_result = categorize_and_summarize(text=text, url=url)
         
-        # Save to DB
+        # Saving to DB
         new_item = SavedItem(
             url=url,
             platform=platform,

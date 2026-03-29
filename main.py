@@ -35,7 +35,7 @@ def get_current_user(request: Request) -> User | None:
         token = token.split(" ")[1]
     payload = decode_access_token(token)
     if not payload:
-        return None
+        return None 
     username = payload.get("sub")
     if not username:
         return None

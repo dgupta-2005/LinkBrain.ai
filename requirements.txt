@@ -5,6 +5,7 @@ jinja2
 
 # Database & ORM
 sqlmodel
+psycopg2-binary
 
 # Security & Authentication (Based on your auth.py imports)
 bcrypt
