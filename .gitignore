@@ -29,5 +29,7 @@ available_models.txt
 .DS_Store
 Thumbs.db
 
-#architectural code 
+# Architecture and Diagrams
 system_architecture.puml
+architecture.puml
+*.puml
