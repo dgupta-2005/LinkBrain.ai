@@ -22,7 +22,7 @@ Capture interesting content from Instagram, Twitter/X, YouTube, and the wider we
 - **Manual Editing**: Full control over your data! Fix AI summaries or change categories directly from the dashboard via a modern modal interface.
 - **Smart Safe Mode**: Intelligent detection for "Walled Garden" sites (Instagram/YouTube). Prevents AI hallucinations when metadata is blocked.
 - **Visual "Needs Info" Alerts**: Pulsating orange indicators and badges instantly highlight links that require a manual touch.
-- **Premium Glassmorphic UI ((VIBE CODED))**: A stunning, vibrant light-mode dashboard built for clarity and visual excellence.
+- **Premium Glassmorphic UI ((VIBE CODED ❌ AI-assisted coded ✅.))**: A stunning, vibrant light-mode dashboard built for clarity and visual excellence.
 - **Secure Authentication**: JWT-based user accounts with encrypted link codes for Telegram pairing.
 
 ---
