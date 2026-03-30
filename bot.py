@@ -19,7 +19,7 @@ async def link_account(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     chat_id = str(update.message.chat_id)
     
     with Session(engine) as session:
-        # Check if already linked to someone else
+        # Checking if already linked to someone else
         existing = session.exec(select(User).where(User.telegram_chat_id == chat_id)).first()
         if existing:
             await update.message.reply_text(f"Your Telegram is already linked to the account '{existing.username}'.")
@@ -51,7 +51,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text("⚠️ Your account is not linked. Please register at the web dashboard and send `/link YOUR_CODE` here.")
         return
 
-    # Simple regex to find URLs
+    # Simple regex to find URLs and Links
     urls = re.findall(r'(https?://[^\s]+)', text)
     
     if not urls:
@@ -76,7 +76,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         elif "linkedin.com" in domain:
             platform = "LinkedIn"
         else:
-            # Fallback: Extract the main word from domain (e.g. towardsdatascience.com -> Towardsdatascience)
+            # Fallback: Extracting the main word from domain (e.g. towardsdatascience.com -> Towardsdatascience)
             try:
                 parts = domain.split('.')
                 # Skip common subdomains like en, m, www
