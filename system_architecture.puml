@@ -1,0 +1,43 @@
+@startuml
+!theme toy
+skinparam backgroundColor white
+skinparam componentStyle rectangle
+
+package "User Interface Layer" #Cyan{
+    actor "User" as user
+    [Telegram App] <<Mobile/Desktop>> as tg_app
+    [Web Browser] <<Dashboard>> as browser
+}
+
+package "Google Cloud Platform (Cloud Run)" #LightBlue {
+    component "Telegram Bot Listener" as bot_svc
+    component "FastAPI Web Service" as web_svc
+    component "AI Processing Agent" as ai_agent
+}
+
+package "External Services" #LightBlue {
+    [Google Gemini API] <<LLM>> as gemini
+    [Microlink / oEmbed] <<Metadata>> as metadata_api
+}
+
+cloud "Database Layer (Supabase)" #Cyan {
+    database "PostgreSQL DB" as db
+}
+
+' Relationships
+user --> tg_app : Sends Links
+user --> browser : Browses Collection
+
+tg_app --> bot_svc : Webhook / Long Polling
+bot_svc --> ai_agent : Triggers Analysis
+ai_agent --> gemini : Generative Tasks
+ai_agent --> metadata_api : Extraction Tasks
+
+bot_svc --> db : Persistence (SQLModel)
+web_svc --> db : Retrieval / CRUD
+
+browser --> web_svc : HTTP / Jinja2
+web_svc ..> ai_agent : Shared Logic
+
+footer LinkBrain.ai: Structural Architecture 🎓🚀
+@enduml

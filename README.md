@@ -31,7 +31,11 @@ Capture interesting content from Instagram, Twitter/X, YouTube, and the wider we
 
 ![Telegram Interaction](assets/bot_screenshot.png)
 
-![Link source](assets/link_source_bucket.png)
+![Link source Buckets](assets/link_source_bucket.png)
+
+![System Architecture](assets/system_architecture.png)
+
+![Database Schema](assets/database_schema.png)
 ---
 
 >
