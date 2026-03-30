@@ -8,16 +8,43 @@ def categorize_and_summarize(text: str, url: str):
     if not api_key:
         return {"summary": "Gemini API Key missing.", "category": "Uncategorized"}
         
+    # Safe Mode: Identified for social links
+    is_social = any(domain in url.lower() for domain in ["instagram.com", "reels", "youtube.com", "youtu.be"])
+    is_youtube = any(domain in url.lower() for domain in ["youtube.com", "youtu.be"])
+    
     try:
         res = requests.get(f"https://api.microlink.io?url={url}", timeout=5)
         if res.status_code == 200:
             microlink_data = res.json().get('data', {})
             title = microlink_data.get('title', '')
             desc = microlink_data.get('description', '')
-            if title or desc:
-                text = f"{text}\n\n[Extracted Web Data]\nTitle: {title}\nDescription: {desc}"
+            
+            # STAGE 1: Check for explicit "Generic/Blocked" pages
+            generic_titles = ["instagram", "login • instagram", "youtube", "login - youtube"]
+            if is_social and title.lower() in generic_titles:
+                title = "" # Force fallback for generic junk
+
+        # STAGE 2: YouTube-Specific Scraper (Prioritize this over Microlink)
+        if is_youtube:
+            oembed_res = requests.get(f"https://www.youtube.com/oembed?url={url}&format=json", timeout=5)
+            if oembed_res.status_code == 200:
+                oembed_data = oembed_res.json()
+                # Overwrite anything Microlink said with the real YouTube Data
+                title = oembed_data.get('title', '')
+                desc = f"Video by {oembed_data.get('author_name', 'YouTube Creator')}"
+            else:
+                print(f"YouTube oEmbed failed with status: {oembed_res.status_code}")
+
+        if title or desc:
+            text = f"{text}\n\n[Extracted Web Data]\nTitle: {title}\nDescription: {desc}"
+            
     except Exception as e:
-        print(f"Microlink extraction failed: {e}")
+        print(f"Metadata extraction failed: {e}")
+
+    # STAGE 3: If it's a social link and we STILL have absolutely ZERO info, skip AI
+    # This is a hard-stop to prevent hallucinations
+    if is_social and (not title or title.lower() in ["youtube", "instagram", "login • instagram"]):
+        return {"summary": "Failed to generate & extract info, please edit manually (by edit button card)", "category": "Others"}
     
     # prompt = f'''
     # You are an AI assistant for a Social Saver bot.
@@ -42,7 +69,8 @@ def categorize_and_summarize(text: str, url: str):
     1. ANALYZE: Review the URL structure (e.g., "github.com" implies Coding, Tech or Learning Platform "medium.com/@fitness" implies Health, Fitness or Lifestyle, etc) and the keywords in the text.
     2. SUMMARIZE: Create a 1-sentence summary (max 15 words) focusing on the "Action" or "Main Value" of the content.
     3. CATEGORIZE: Select the SINGLE most accurate category. 
-       - If the content is technical, be specific (e.g. use "Machine Learning" or "Data Science" or "Web Development" or "Blockchain" or "Cyber Security" or "Cloud Computing" or "AI" or "ML" or "Deep Learning" or "Computer Vision" or "NLP" or "Robotics" or "GenAI" or "LLM" etc instead of just "Tech").
+       - If the URL and text provide NO clear info (e.g. content is restricted, hidden, or ambiguous), do NOT guess. Set summary to "Failed to generate extract info, please edit manually (by edit button card)" and category to "Others".
+       - If technical, be specific (e.g. "Machine Learning" instead of "Tech").
        - Use common industry tags: [Coding, AI, Machine Learning, Fitness, Math, Food, Travel, Design, Finance, Career, Courses, Productivity, Fashion, Humor, Business , Entertainment, Sports, Health, Education, Technology, Science, News, Politics, World Other].
        - If none fit, create a concise 1-2 word tag that represents the primary niche.
 
@@ -103,7 +131,7 @@ def categorize_and_summarize(text: str, url: str):
             print(f"Error calling {model_name}: {e}")
             
     print(f"All models failed. Last error: {last_error}")
-    return {"summary": "Gemini API Error. See logs.", "category": "Uncategorized"}
+    return {"summary": "Failed to generate & extract info, please edit manually (by edit button card)", "category": "Others"}
 
 if __name__ == "__main__":
     res = categorize_and_summarize("Test content", "https://instagram.com/p/123")

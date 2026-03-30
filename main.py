@@ -172,9 +172,29 @@ async def delete_item(request: Request, item_id: int):
 
     with Session(engine) as session:
         item = session.get(SavedItem, item_id)
-        # Ensuring the item belongs to the logged-in user before deleting
         if item and item.user_id == user.id:
             session.delete(item)
+            session.commit()
+            
+    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+@app.post("/edit/{item_id}")
+async def edit_item(
+    request: Request, 
+    item_id: int, 
+    summary: str = Form(...), 
+    category: str = Form(...)
+):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+
+    with Session(engine) as session:
+        item = session.get(SavedItem, item_id)
+        if item and item.user_id == user.id:
+            item.summary = summary.strip()
+            item.category = category.strip()
+            session.add(item)
             session.commit()
             
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
