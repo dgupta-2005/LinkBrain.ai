@@ -23,35 +23,98 @@
             border: 2px solid #3b82f6; /* Vibrant Tailwind blue-500 */
             box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.15), 0 10px 10px -5px rgba(59, 130, 246, 0.08);
         }
+        .step-card {
+            background: rgba(255, 255, 255, 0.80);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -2px rgba(59, 130, 246, 0.05);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-md p-8 rounded-3xl">
-        <div class="text-center mb-8 border-b border-slate-200 pb-6">
-            <h1 class="text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500 tracking-tight">LinkBrain.ai</h1>
-            <p class="text-sm text-slate-500 font-medium">Your AI-powered knowledge base from social media.</p>
+<body class="min-h-screen flex items-center justify-center p-4 py-8">
+    <div class="flex flex-col lg:flex-row items-center justify-center gap-8 max-w-7xl w-full">
+        
+        <!-- Left Panel: Steps 1 & 2 -->
+        <div class="hidden lg:flex flex-col gap-6 w-80 xl:w-96">
+            <!-- Step 1 -->
+            <div class="step-card p-5 rounded-2xl">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-extrabold px-2.5 py-0.5 rounded-full uppercase">Step 1</span>
+                    <h3 class="font-bold text-slate-800 text-sm">Find Cool Content</h3>
+                </div>
+                <p class="text-xs text-slate-500 mb-3 leading-relaxed">Discover articles, YouTube Shorts, or Instagram Reels. Just copy the link!</p>
+                <img src="/assets/content_sources.png" alt="Step 1" class="w-full h-32 object-cover rounded-xl border border-slate-100 shadow-sm">
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-card p-5 rounded-2xl">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-extrabold px-2.5 py-0.5 rounded-full uppercase">Step 2</span>
+                    <h3 class="font-bold text-slate-800 text-sm">Send to bunnyBot</h3>
+                </div>
+                <p class="text-xs text-slate-500 mb-3 leading-relaxed">Message the link to bunnyBot on Telegram. AI processes it instantly.</p>
+                <img src="/assets/telegram_reply.png" alt="Step 2" class="w-full h-32 object-cover rounded-xl border border-slate-100 shadow-sm">
+            </div>
         </div>
-        <h2 class="text-2xl font-bold mb-6 text-center text-slate-800">Welcome Back</h2>
-        
-        {% if error %}
-            <div class="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl mb-6 text-sm font-bold shadow-sm text-center">{{ error }}</div>
-        {% endif %}
-        
-        <form action="/login" method="POST" class="space-y-5">
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-1.5">Email Address</label>
-                <input type="email" name="username" placeholder="you@company.com" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-slate-800 shadow-sm transition-all font-medium placeholder-slate-400">
+
+        <!-- Center Panel: Login Form -->
+        <div class="glass-card w-full max-w-md p-8 rounded-3xl self-stretch flex flex-col justify-center">
+            <div class="text-center mb-8 border-b border-slate-200 pb-6">
+                <h1 class="text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500 tracking-tight">LinkBrain.ai</h1>
+                <p class="text-sm text-slate-500 font-medium">Your AI-powered knowledge base from social media.</p>
             </div>
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-1.5">Password</label>
-                <input type="password" name="password" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-slate-800 shadow-sm transition-all font-medium placeholder-slate-400">
+            <h2 class="text-2xl font-bold mb-6 text-center text-slate-800">Welcome Back</h2>
+            
+            {% if error %}
+                <div class="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl mb-6 text-sm font-bold shadow-sm text-center">{{ error }}</div>
+            {% endif %}
+            
+            <form action="/login" method="POST" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">Email Address</label>
+                    <input type="email" name="username" placeholder="you@company.com" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-slate-800 shadow-sm transition-all font-medium placeholder-slate-400">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">Password</label>
+                    <input type="password" name="password" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-slate-800 shadow-sm transition-all font-medium placeholder-slate-400">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg mt-4">Sign In</button>
+            </form>
+            
+            <p class="mt-8 text-center text-slate-500 text-sm font-medium">
+                Don't have an account? <a href="/register" class="text-blue-600 font-bold hover:text-blue-500 transition-colors">Register here</a>
+            </p>
+        </div>
+
+        <!-- Right Panel: Steps 3 & 4 -->
+        <div class="hidden lg:flex flex-col gap-6 w-80 xl:w-96">
+            <!-- Step 3 -->
+            <div class="step-card p-5 rounded-2xl">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-extrabold px-2.5 py-0.5 rounded-full uppercase">Step 3</span>
+                    <h3 class="font-bold text-slate-800 text-sm">Organized Dashboard</h3>
+                </div>
+                <p class="text-xs text-slate-500 mb-3 leading-relaxed">Watch as links appear categorized in clean cards with tags and summaries.</p>
+                <img src="/assets/dashboard_cards.png" alt="Step 3" class="w-full h-32 object-cover rounded-xl border border-slate-100 shadow-sm">
             </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg mt-4">Sign In</button>
-        </form>
-        
-        <p class="mt-8 text-center text-slate-500 text-sm font-medium">
-            Don't have an account? <a href="/register" class="text-blue-600 font-bold hover:text-blue-500 transition-colors">Register here</a>
-        </p>
+
+            <!-- Step 4 -->
+            <div class="step-card p-5 rounded-2xl">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-extrabold px-2.5 py-0.5 rounded-full uppercase">Step 4</span>
+                    <h3 class="font-bold text-slate-800 text-sm">Manage & Customize</h3>
+                </div>
+                <p class="text-xs text-slate-500 mb-3 leading-relaxed">Hover to edit tags, update AI summaries, delete items, or create custom folders.</p>
+                <img src="/assets/content_management.png" alt="Step 4" class="w-full h-32 object-cover rounded-xl border border-slate-100 shadow-sm">
+            </div>
+        </div>
+
     </div>
 </body>
 </html>

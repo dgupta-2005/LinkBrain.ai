@@ -13,18 +13,28 @@ from bot import start_bot
 from auth import verify_password, get_password_hash, create_access_token, decode_access_token
 from datetime import timedelta
 
-load_dotenv()
+load_dotenv(override=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Create tables and start background bot
     create_db_and_tables()
-    bot_task = asyncio.create_task(start_bot())
+    
+    bot_task = None
+    if os.getenv("START_BOT", "true").lower() == "true":
+        bot_task = asyncio.create_task(start_bot())
+    else:
+        print("Telegram bot startup skipped (START_BOT=false)")
+        
     yield
     # Shutdown
-    bot_task.cancel()
+    if bot_task:
+        bot_task.cancel()
+
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(lifespan=lifespan)
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 templates = Jinja2Templates(directory="templates")
 
 def get_current_user(request: Request) -> User | None:
