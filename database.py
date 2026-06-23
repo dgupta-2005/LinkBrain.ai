@@ -3,7 +3,7 @@ import os
 from models import SavedItem, User
 
 # 1. Load the database URL from an environment variable (e.g. Supabase or SQLite)
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./database_v2.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./database_v2.db").strip()
 
 # 2. Configure engine arguments (SQLite needs a special thread check flag)
 connect_args = {}
