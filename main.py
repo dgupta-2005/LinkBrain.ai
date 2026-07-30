@@ -3,6 +3,8 @@ import asyncio
 import json
 import base64
 import secrets
+import hashlib
+import hmac
 import urllib.parse
 import urllib.request
 from contextlib import asynccontextmanager
@@ -23,10 +25,13 @@ from auth import verify_password, get_password_hash, create_access_token, decode
 
 load_dotenv(override=True)
 
-# Google OAuth Credentials
-CLIENT_ID = os.getenv("CLIENT_ID") or os.getenv("GOOGLE_CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET") or os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
+# Google OAuth Credentials & Dynamic Redirect URI
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+
+# Dynamically sets domain based on Render environment or defaults to localhost
+BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "http://localhost:8000").rstrip("/")
+GOOGLE_REDIRECT_URI = f"{BASE_URL}/auth/google/callback"
 
 
 @asynccontextmanager
@@ -90,6 +95,8 @@ async def login_page(request: Request, error: str = ""):
 async def login_post(request: Request, username: str = Form(...), password: str = Form(...)):
     with Session(engine) as session:
         user = session.exec(select(User).where(User.username == username)).first()
+        
+        # Safeguard: check user existence and ensure hashed_password exists before verifying
         if not user or not user.hashed_password or not verify_password(password, user.hashed_password):
             return RedirectResponse(url="/login?error=Invalid username or password", status_code=status.HTTP_303_SEE_OTHER)
         
@@ -128,13 +135,13 @@ async def logout():
 
 
 # ----------------------------------------------------
-# 🚀 GOOGLE OAUTH ROUTES (INTEGRATED FROM OAUTH_SANDBOX.PY)
+# 🚀 GOOGLE OAUTH ROUTES
 # ----------------------------------------------------
 
 @app.get("/auth/google/login")
 async def login_google():
     if not CLIENT_ID or not CLIENT_SECRET:
-        raise HTTPException(status_code=500, detail="Google Client credentials missing in .env")
+        raise HTTPException(status_code=500, detail="Google Client credentials missing in environment variables")
 
     state = secrets.token_urlsafe(16)
     auth_params = {
@@ -340,58 +347,6 @@ async def edit_item(
 # TELEGRAM BOT INTEGRATION ENDPOINTS
 # ==========================================
 
-# ----------------------------------------------------
-# DEPRECATED: OLD TELEGRAM LOGIN WIDGET AUTH
-# (Commented out in favor of Google OAuth + 1-Click Bot Deep Link)
-# ----------------------------------------------------
-# class TelegramAuthData(BaseModel):
-#     id: int
-#     first_name: str
-#     last_name: str | None = None
-#     username: str | None = None
-#     photo_url: str | None = None
-#     auth_date: int
-#     hash: str
-#
-# def verify_telegram_data(data_dict: dict) -> bool:
-#     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-#     received_hash = data_dict.pop("hash", None)
-#     if not received_hash or not bot_token:
-#         return False
-#     data_check_list = [f"{k}={v}" for k, v in data_dict.items() if v is not None]
-#     data_check_list.sort()
-#     data_check_string = "\n".join(data_check_list)
-#     secret_key = hashlib.sha256(bot_token.encode("utf-8")).digest()
-#     calculated_hash = hmac.new(secret_key, data_check_string.encode("utf-8"), hashlib.sha256).hexdigest()
-#     return hmac.compare_digest(calculated_hash, received_hash)
-#
-# @app.post("/api/auth/telegram")
-# async def telegram_auth(user: TelegramAuthData):
-#     user_dict = user.model_dump()
-#     if not verify_telegram_data(user_dict.copy()):
-#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid cryptographic signature.")
-#     telegram_id_str = str(user.id)
-#     with Session(engine) as session:
-#         db_user = session.exec(select(User).where(User.telegram_chat_id == telegram_id_str)).first()
-#         if not db_user:
-#             base_username = user.username or f"telegram_{user.id}"
-#             username = base_username
-#             existing = session.exec(select(User).where(User.username == username)).first()
-#             if existing:
-#                 username = f"{base_username}_{secrets.token_hex(4)}"
-#             random_password_hash = get_password_hash(secrets.token_hex(16))
-#             db_user = User(username=username, hashed_password=random_password_hash, telegram_chat_id=telegram_id_str)
-#             session.add(db_user)
-#             session.commit()
-#             session.refresh(db_user)
-#         access_token_expires = timedelta(minutes=60*24*7)
-#         access_token = create_access_token(data={"sub": db_user.username}, expires_delta=access_token_expires)
-#         response = JSONResponse(content={"status": "success", "message": "Authenticated successfully!"})
-#         response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True, max_age=60*24*7*60)
-#         return response
-
-
-# ACTIVE: 1-Click Telegram Deep-Linking Endpoint for index.html
 @app.post("/api/telegram/generate-link-url")
 def generate_telegram_link_url(request: Request):
     user = get_current_user(request)
