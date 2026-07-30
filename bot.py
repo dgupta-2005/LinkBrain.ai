@@ -1,5 +1,7 @@
 import os
 import re
+import asyncio
+from datetime import datetime
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from sqlmodel import Session, select
@@ -8,7 +10,55 @@ from models import SavedItem, User
 from ai_agent import categorize_and_summarize
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("Hello! I'm the Social Saver Bot. Send me a link (Instagram, Twitter, etc.) to save it!\n\nIf you haven't linked your account yet, go to your web dashboard and send me `/link YOUR_CODE`.")
+    chat_id = str(update.message.chat_id)
+
+    # 1. Check if user opened bot via 1-click Deep Link (e.g., /start connect_xyz)
+    if context.args:
+        token = context.args[0]
+        
+        with Session(engine) as session:
+            user = session.exec(
+                select(User).where(User.link_token == token)
+            ).first()
+
+            # Verify token validity and expiration
+            if not user or (user.link_token_expires_at and user.link_token_expires_at < datetime.utcnow()):
+                await update.message.reply_text("❌ This connection link has expired or is invalid. Please click the button again from your web dashboard.")
+                return
+
+            # Check if Telegram is already linked to another user
+            existing = session.exec(
+                select(User).where(User.telegram_chat_id == chat_id)
+            ).first()
+            
+            if existing and existing.id != user.id:
+                await update.message.reply_text(f"⚠️ Your Telegram is already linked to another account ('{existing.username}').")
+                return
+    
+            # Pair account & consume token
+            user.telegram_chat_id = chat_id
+            user.link_token = None
+            user.link_token_expires_at = None
+            
+            session.add(user)
+            session.commit()
+
+            await update.message.reply_text(
+                f"🎉 **Success!** Your Telegram is now linked to **{user.username}**.\n\n"
+                f"Send me any social media link and I'll summarize it directly onto your dashboard!"
+            )
+            return
+
+    # 2. Fallback /start (without payload)
+    with Session(engine) as session:
+        user = session.exec(select(User).where(User.telegram_chat_id == chat_id)).first()
+        if user:
+            await update.message.reply_text(f"Welcome back, {user.username}! Send me any link to save it.")
+        else:
+            await update.message.reply_text(
+                "Hello! I'm bunnyBot. 🚀\n\n"
+                "Please log into your LinkBrain.ai dashboard and click 'Connect Telegram' to pair your account!"
+            )
 
 async def link_account(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not context.args:
@@ -19,7 +69,6 @@ async def link_account(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     chat_id = str(update.message.chat_id)
     
     with Session(engine) as session:
-        # Checking if already linked to someone else
         existing = session.exec(select(User).where(User.telegram_chat_id == chat_id)).first()
         if existing:
             await update.message.reply_text(f"Your Telegram is already linked to the account '{existing.username}'.")
@@ -42,16 +91,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     with Session(engine) as session:
         user = session.exec(select(User).where(User.telegram_chat_id == chat_id)).first()
-        if not user:
-            user_id = None
-        else:
-            user_id = user.id
+        user_id = user.id if user else None
         
     if not user_id:
-        await update.message.reply_text("⚠️ Your account is not linked. Please register at the web dashboard and send `/link YOUR_CODE` here.")
+        await update.message.reply_text("⚠️ Your account is not linked. Please log into your web dashboard and click 'Connect Telegram'.")
         return
 
-    # Simple regex to find URLs and Links
     urls = re.findall(r'(https?://[^\s]+)', text)
     
     if not urls:
@@ -61,7 +106,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await update.message.reply_text("Processing your link...")
     
     for url in urls:
-        # Extract platform gracefully from domain
         from urllib.parse import urlparse
         domain = urlparse(url).netloc.lower()
         if domain.startswith("www."):
@@ -76,10 +120,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         elif "linkedin.com" in domain:
             platform = "LinkedIn"
         else:
-            # Fallback: Extracting the main word from domain (e.g. towardsdatascience.com -> Towardsdatascience)
             try:
                 parts = domain.split('.')
-                # Skip common subdomains like en, m, www
                 if parts[0] in ['www', 'm', 'en', 'hi', 'mobile'] and len(parts) > 1:
                     main_word = parts[1]
                 else:
@@ -88,10 +130,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             except Exception:
                 platform = "Web"
         
-        # Analyzing with Gemini
         ai_result = categorize_and_summarize(text=text, url=url)
         
-        # Saving to DB
         new_item = SavedItem(
             url=url,
             platform=platform,
@@ -120,7 +160,10 @@ async def start_bot():
     application.add_handler(CommandHandler("link", link_account))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    print("Starting Telegram Bot Polling...")
+    print("🚀 Bunny Bot Polling initialized...")
     await application.initialize()
     await application.start()
     await application.updater.start_polling()
+    
+    # Keeps background task active inside FastAPI lifespan
+    await asyncio.Event().wait()

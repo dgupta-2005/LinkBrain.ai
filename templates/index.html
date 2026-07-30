@@ -1,320 +1,798 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LinkBrain.ai Dashboard</title>
+    <!-- 🚀 PRE-RENDER THEME SCRIPT (Prevents White Flash) -->
+    <script>
+      (function () {
+        const savedTheme = localStorage.getItem("theme");
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        if (savedTheme === "dark" || (!savedTheme && systemPrefersDark)) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      })();
+    </script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            900: '#0c4a6e',
-                        }
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              brand: {
+                50: "#f0f9ff",
+                100: "#e0f2fe",
+                500: "#0ea5e9",
+                600: "#0284c7",
+                900: "#0c4a6e",
+              },
+            },
+          },
+        },
+      };
     </script>
     <style>
-        body {
-            background-color: #f8fafc;
-            color: #0f172a;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(28,100%,74%,0.15) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(189,100%,56%,0.15) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(339,100%,74%,0.15) 0, transparent 50%);
-            background-attachment: fixed;
-        }
-        .glass-card {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-        }
-    </style>
-</head>
-<body class="min-h-screen font-sans selection:bg-brand-500 selection:text-white">
+      body {
+        background-color: #f8fafc;
+        color: #0f172a;
+        background-image:
+          radial-gradient(
+            at 0% 0%,
+            hsla(28, 100%, 74%, 0.15) 0,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 50% 0%,
+            hsla(189, 100%, 56%, 0.15) 0,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            hsla(339, 100%, 74%, 0.15) 0,
+            transparent 50%
+          );
+        background-attachment: fixed;
+        transition:
+          background-color 0.3s ease,
+          color 0.3s ease;
+      }
+      html.dark {
+        background-color: #000000 !important;
+      }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <!-- Header -->
-    <header class="flex flex-col mb-12 gap-8">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
-            <div>
-                <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-500 to-purple-500">
-                    LinkBrain.ai
-                </h1>
-                <p class="text-slate-500 mt-2 font-medium">Your AI-powered knowledge base from social media.</p>
+      /* 🚀 STRICT PITCH BLACK DARK MODE BACKGROUND */
+      html.dark body {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        background-image: none !important; /* Removes all light/blue radial gradients */
+      }
+
+      .glass-card {
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow:
+          0 10px 25px -5px rgba(0, 0, 0, 0.05),
+          0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      }
+
+      html.dark .glass-card {
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8);
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen font-sans selection:bg-brand-500 selection:text-white bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300"
+  >
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <!-- Header -->
+      <header class="flex flex-col mb-12 gap-8">
+        <div
+          class="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4"
+        >
+          <div>
+            <h1
+              class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-500 to-purple-500"
+            >
+              LinkBrain.ai
+            </h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              Your AI-powered knowledge base from social media.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Theme Toggle Button -->
+            <button
+              id="theme-toggle"
+              onclick="toggleDarkMode()"
+              class="glass-card p-3 rounded-xl flex items-center justify-center bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm"
+              title="Toggle Light/Dark Theme"
+            >
+              <!-- Sun Icon (Hidden in Light mode) -->
+              <svg
+                id="theme-toggle-sun"
+                class="w-5 h-5 text-amber-400 hidden"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                ></path>
+              </svg>
+              <!-- Moon Icon (Shown in Light mode) -->
+              <svg
+                id="theme-toggle-moon"
+                class="w-5 h-5 text-slate-600 dark:text-slate-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                ></path>
+              </svg>
+            </button>
+
+            <!-- User Info Card -->
+            <div
+              class="glass-card bg-white/60 dark:bg-slate-800/60 px-6 py-3 rounded-xl flex items-center justify-between gap-6 border-brand-500/20 dark:border-slate-700"
+            >
+              <div>
+                <p
+                  class="text-xs text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-widest font-semibold"
+                >
+                  Logged in as
+                </p>
+                <p class="text-sm font-bold text-slate-800 dark:text-slate-100">
+                  {{ user.username }}
+                </p>
+              </div>
+              <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
+              <a
+                href="/logout"
+                class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors"
+                >Sign Out</a
+              >
             </div>
-            
-            <div class="glass-card bg-white/60 px-6 py-3 rounded-xl flex items-center justify-between gap-6 border-brand-500/20">
-                <div>
-                    <p class="text-xs text-slate-500 mb-1 uppercase tracking-widest font-semibold">Logged in as</p>
-                    <p class="text-sm font-bold text-slate-800">{{ user.username }}</p>
-                </div>
-                <div class="h-8 w-px bg-slate-200"></div>
-                <a href="/logout" class="text-sm font-bold text-red-500 hover:text-red-600 transition-colors">Sign Out</a>
-            </div>
+          </div>
         </div>
 
         <!-- Telegram Connection Banner -->
-        <div class="glass-card p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-white to-slate-50 border-l-4 border-l-brand-500 shadow-sm border border-slate-200">
-                <div class="mb-4 sm:mb-0 pr-4">
-                    <h2 class="text-xl font-bold text-slate-800 mb-2 flex items-center">
-                        Connect your Telegram 🚀
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-1 leading-relaxed font-medium">
-                        Message <a href="https://t.me/bunny05_bot" target="_blank" class="bg-blue-100/80 text-blue-600 px-2.5 py-1 rounded-md font-bold hover:bg-blue-200 hover:text-blue-700 transition-colors mx-1 border border-blue-200">bunnyBot</a> with this exact command so it knows to save links to your account.
-                    </p>
-                </div>
-            <div class="bg-slate-100 px-6 py-3 rounded-lg border border-slate-200 shadow-inner">
-                <code class="text-brand-600 font-mono text-xl font-bold select-all tracking-wider">/link {{ user.link_code }}</code>
+        {% if user.telegram_chat_id %}
+        <!-- STATE 1: ALREADY CONNECTED -->
+        <div
+          class="glass-card p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 bg-emerald-50/60 dark:bg-emerald-950/30 border-l-4 border-l-emerald-500 shadow-sm border border-emerald-200 dark:border-emerald-800"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xl shrink-0"
+            >
+              ✓
             </div>
+            <div>
+              <h2
+                class="text-base font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-2"
+              >
+                Telegram Connected
+              </h2>
+              <p
+                class="text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed"
+              >
+                Your account is paired with
+                <span class="font-bold">@bunny05_bot</span>. Send any social
+                link to the bot to auto-save it here!
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span
+              class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs font-bold px-4 py-2 rounded-xl border border-emerald-300 dark:border-emerald-700 shadow-xs flex items-center gap-2"
+            >
+              <span
+                class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
+              ></span>
+              Active Sync
+            </span>
+          </div>
         </div>
-        
+        {% else %}
+        <!-- STATE 2: NOT CONNECTED YET -->
+        <div
+          class="glass-card p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/80 border-l-4 border-l-brand-500 shadow-sm border border-slate-200 dark:border-slate-700"
+        >
+          <div class="mb-4 md:mb-0 pr-4">
+            <h2
+              class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1 flex items-center gap-2"
+            >
+              Connect your Telegram 🚀
+            </h2>
+            <p
+              class="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed"
+            >
+              Link your account to
+              <span class="font-bold text-slate-700 dark:text-slate-200"
+                >@bunny05_bot</span
+              >
+              in 1 click to enable auto-saving.
+            </p>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <button
+              id="connect-tg-btn"
+              onclick="connectTelegramAccount()"
+              class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm transform hover:-translate-y-0.5"
+            >
+              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"
+                />
+              </svg>
+              <span>Connect Telegram Bot</span>
+            </button>
+          </div>
+        </div>
+        {% endif %}
+
         <!-- Search Bar -->
         <form method="get" action="/" class="w-full relative mt-4">
-            {% if current_platform %}
-            <input type="hidden" name="platform" value="{{ current_platform }}">
-            {% endif %}
-            {% if order and order != 'newest' %}
-            <input type="hidden" name="order" value="{{ order }}">
-            {% endif %}
-            <input type="text" name="q" value="{{ q if q else '' }}" placeholder="Search your saved links by topic, summary, or keyword..." 
-                   class="w-full bg-white/80 border border-slate-200 text-slate-800 font-medium rounded-xl py-4 pl-14 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all placeholder-slate-400 shadow-md text-lg">
-            <svg class="w-6 h-6 text-slate-400 absolute left-5 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          {% if current_platform %}
+          <input type="hidden" name="platform" value="{{ current_platform }}" />
+          {% endif %} {% if order and order != 'newest' %}
+          <input type="hidden" name="order" value="{{ order }}" />
+          {% endif %}
+          <input
+            type="text"
+            name="q"
+            value="{{ q if q else '' }}"
+            placeholder="Search your saved links by topic, summary, or keyword..."
+            class="w-full bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-medium rounded-xl py-4 pl-14 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all placeholder-slate-400 dark:placeholder-slate-500 shadow-md text-lg"
+          />
+          <svg
+            class="w-6 h-6 text-slate-400 dark:text-slate-500 absolute left-5 top-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            ></path>
+          </svg>
+          {% if q %}
+          <a
+            href="/?{% if current_platform %}platform={{ current_platform }}&{% endif %}{% if order and order != 'newest' %}order={{ order }}{% endif %}"
+            class="absolute right-5 top-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
             </svg>
-            {% if q %}
-            <a href="/?{% if current_platform %}platform={{ current_platform }}&{% endif %}{% if order and order != 'newest' %}order={{ order }}{% endif %}" class="absolute right-5 top-4 text-slate-400 hover:text-slate-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </a>
-            {% endif %}
+          </a>
+          {% endif %}
         </form>
-    </header>
+      </header>
 
-    <!-- Controls Row: Platform Filter Buckets & Sort Toggle -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        
+      <!-- Controls Row: Platform Filter Buckets & Sort Toggle -->
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+      >
         <div class="flex flex-wrap items-center gap-2 md:gap-3">
-            <a href="/?{% if q %}q={{ q }}&{% endif %}{% if order and order != 'newest' %}order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if not current_platform %}bg-slate-800 text-white border-slate-700{% else %}bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900{% endif %}">
-                <span>All Links</span>
-                <span class="px-2 py-0.5 rounded-full text-xs {% if not current_platform %}bg-slate-700 text-white{% else %}bg-slate-100 text-slate-500{% endif %}">{{ bucket_counts['All Links'] }}</span>
-            </a>
-            <a href="/?platform=Instagram{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'Instagram' %}bg-rose-600 text-white border-rose-500{% else %}bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 hover:text-rose-700{% endif %}">
-                <span>Instagram</span>
-                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'Instagram' %}bg-rose-500 text-white{% else %}bg-rose-200 text-rose-700{% endif %}">{{ bucket_counts['Instagram'] }}</span>
-            </a>
-            <a href="/?platform=Twitter{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'Twitter' or current_platform == 'X' %}bg-slate-800 text-white border-slate-700{% else %}bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200 hover:text-slate-900{% endif %}">
-                <span>Twitter / X</span>
-                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'Twitter' or current_platform == 'X' %}bg-slate-700 text-white{% else %}bg-slate-200 text-slate-600{% endif %}">{{ bucket_counts['Twitter / X'] }}</span>
-            </a>
-            <a href="/?platform=YouTube{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'YouTube' %}bg-red-700 text-white border-red-600{% else %}bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700{% endif %}">
-                <span>YouTube</span>
-                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'YouTube' %}bg-red-600 text-white{% else %}bg-red-200 text-red-700{% endif %}">{{ bucket_counts['YouTube'] }}</span>
-            </a>
-            
-            {% for bucket in custom_buckets %}
-            <a href="/?platform={{ bucket.platform }}{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == bucket.platform %}bg-emerald-600 text-white border-emerald-500{% else %}bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700{% endif %}">
-                <span>{{ bucket.platform }}</span>
-                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == bucket.platform %}bg-emerald-500 text-white{% else %}bg-emerald-200 text-emerald-700{% endif %}">{{ bucket_counts[bucket.platform] }}</span>
-            </a>
-            {% endfor %}
+          <a
+            href="/?{% if q %}q={{ q }}&{% endif %}{% if order and order != 'newest' %}order={{ order }}{% endif %}"
+            class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if not current_platform %}bg-slate-800 text-white border-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-200{% else %}bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}"
+          >
+            <span>All Links</span>
+            <span
+              class="px-2 py-0.5 rounded-full text-xs {% if not current_platform %}bg-slate-700 text-white dark:bg-slate-300 dark:text-slate-900{% else %}bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400{% endif %}"
+              >{{ bucket_counts['All Links'] }}</span
+            >
+          </a>
+          <a
+            href="/?platform=Instagram{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}"
+            class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'Instagram' %}bg-rose-600 text-white border-rose-500{% else %}bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900 hover:bg-rose-100 dark:hover:bg-rose-900/60 hover:text-rose-700{% endif %}"
+          >
+            <span>Instagram</span>
+            <span
+              class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'Instagram' %}bg-rose-500 text-white{% else %}bg-rose-200 dark:bg-rose-900 text-rose-700 dark:text-rose-300{% endif %}"
+              >{{ bucket_counts['Instagram'] }}</span
+            >
+          </a>
+          <a
+            href="/?platform=Twitter{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}"
+            class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'Twitter' or current_platform == 'X' %}bg-slate-800 text-white border-slate-700 dark:bg-slate-200 dark:text-slate-900{% else %}bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}"
+          >
+            <span>Twitter / X</span>
+            <span
+              class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'Twitter' or current_platform == 'X' %}bg-slate-700 text-white dark:bg-slate-400 dark:text-slate-900{% else %}bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400{% endif %}"
+              >{{ bucket_counts['Twitter / X'] }}</span
+            >
+          </a>
+          <a
+            href="/?platform=YouTube{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}"
+            class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'YouTube' %}bg-red-700 text-white border-red-600{% else %}bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900 hover:bg-red-100 dark:hover:bg-red-900/60 hover:text-red-700{% endif %}"
+          >
+            <span>YouTube</span>
+            <span
+              class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'YouTube' %}bg-red-600 text-white{% else %}bg-red-200 dark:bg-red-900 text-red-700 dark:text-red-300{% endif %}"
+              >{{ bucket_counts['YouTube'] }}</span
+            >
+          </a>
 
-            <a href="/?platform=Others{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}" class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'Others' %}bg-amber-500 text-white border-amber-400{% else %}bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100 hover:text-yellow-800{% endif %}">
-                <span>Others</span>
-                <span class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'Others' %}bg-amber-400 text-white{% else %}bg-yellow-200 text-yellow-700{% endif %}">{{ bucket_counts['Others'] }}</span>
-            </a>
-            
-            <form action="/bucket/new" method="POST" class="flex items-center bg-white border border-slate-200 rounded-full pl-3 pr-1 py-1 shadow-sm shrink-0 ml-1 h-[38px] group hover:border-indigo-300 transition-colors">
-                <input type="text" name="platform_name" placeholder="+ new bucket" required class="text-xs border-none focus:ring-0 outline-none bg-transparent w-24 placeholder-slate-400 font-bold text-slate-700 p-0 m-0 leading-none">
-                <button type="submit" class="bg-indigo-50 hover:bg-indigo-500 text-indigo-500 hover:text-white border border-indigo-200 rounded-full w-7 h-7 flex items-center justify-center transition-colors shadow-sm text-sm font-bold ml-1 leading-none pt-0.5">+</button>
-            </form>
+          {% for bucket in custom_buckets %}
+          <a
+            href="/?platform={{ bucket.platform }}{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}"
+            class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == bucket.platform %}bg-emerald-600 text-white border-emerald-500{% else %}bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 hover:text-emerald-700{% endif %}"
+          >
+            <span>{{ bucket.platform }}</span>
+            <span
+              class="px-2 py-0.5 rounded-full text-xs {% if current_platform == bucket.platform %}bg-emerald-500 text-white{% else %}bg-emerald-200 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300{% endif %}"
+              >{{ bucket_counts[bucket.platform] }}</span
+            >
+          </a>
+          {% endfor %}
+
+          <a
+            href="/?platform=Others{% if q %}&q={{ q }}{% endif %}{% if order and order != 'newest' %}&order={{ order }}{% endif %}"
+            class="px-5 py-2 rounded-full font-bold text-sm transition-all shadow-sm border flex items-center gap-2 {% if current_platform == 'Others' %}bg-amber-500 text-white border-amber-400{% else %}bg-yellow-50 dark:bg-amber-950/40 text-yellow-700 dark:text-amber-400 border-yellow-300 dark:border-amber-900 hover:bg-yellow-100 dark:hover:bg-amber-900/60 hover:text-yellow-800{% endif %}"
+          >
+            <span>Others</span>
+            <span
+              class="px-2 py-0.5 rounded-full text-xs {% if current_platform == 'Others' %}bg-amber-400 text-white{% else %}bg-yellow-200 dark:bg-amber-900 text-yellow-700 dark:text-amber-300{% endif %}"
+              >{{ bucket_counts['Others'] }}</span
+            >
+          </a>
+
+          <form
+            action="/bucket/new"
+            method="POST"
+            class="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full pl-3 pr-1 py-1 shadow-sm shrink-0 ml-1 h-[38px] group hover:border-indigo-300 dark:hover:border-indigo-500 transition-colors"
+          >
+            <input
+              type="text"
+              name="platform_name"
+              placeholder="+ new bucket"
+              required
+              class="text-xs border-none focus:ring-0 outline-none bg-transparent w-24 placeholder-slate-400 dark:placeholder-slate-500 font-bold text-slate-700 dark:text-slate-200 p-0 m-0 leading-none"
+            />
+            <button
+              type="submit"
+              class="bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-500 text-indigo-500 hover:text-white border border-indigo-200 dark:border-indigo-800 rounded-full w-7 h-7 flex items-center justify-center transition-colors shadow-sm text-sm font-bold ml-1 leading-none pt-0.5"
+            >
+              +
+            </button>
+          </form>
         </div>
 
         <!-- Sort Toggle -->
-        <div class="flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm shrink-0 h-10">
-            <a href="/?order=newest{% if q %}&q={{ q }}{% endif %}{% if current_platform %}&platform={{ current_platform }}{% endif %}" 
-               class="px-4 py-1 text-sm font-semibold rounded-md transition-all {% if order != 'oldest' %}bg-slate-800 text-white shadow{% else %}text-slate-500 hover:text-slate-800{% endif %}">
-                Newest
-            </a>
-            <a href="/?order=oldest{% if q %}&q={{ q }}{% endif %}{% if current_platform %}&platform={{ current_platform }}{% endif %}" 
-               class="px-4 py-1 text-sm font-semibold rounded-md transition-all {% if order == 'oldest' %}bg-slate-800 text-white shadow{% else %}text-slate-500 hover:text-slate-800{% endif %}">
-                Oldest
-            </a>
+        <div
+          class="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1 shadow-sm shrink-0 h-10"
+        >
+          <a
+            href="/?order=newest{% if q %}&q={{ q }}{% endif %}{% if current_platform %}&platform={{ current_platform }}{% endif %}"
+            class="px-4 py-1 text-sm font-semibold rounded-md transition-all {% if order != 'oldest' %}bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 shadow{% else %}text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100{% endif %}"
+          >
+            Newest
+          </a>
+          <a
+            href="/?order=oldest{% if q %}&q={{ q }}{% endif %}{% if current_platform %}&platform={{ current_platform }}{% endif %}"
+            class="px-4 py-1 text-sm font-semibold rounded-md transition-all {% if order == 'oldest' %}bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 shadow{% else %}text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100{% endif %}"
+          >
+            Oldest
+          </a>
         </div>
+      </div>
+
+      <!-- Content Grid -->
+      {% if items %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in items %} {% set theme = {'card_bg': 'bg-sky-100
+        dark:bg-sky-950/60', 'bg': 'bg-sky-200 dark:bg-sky-900', 'text':
+        'text-sky-800 dark:text-sky-200', 'border': 'border-sky-300
+        dark:border-sky-800', 'hover_border': 'hover:border-sky-400
+        dark:hover:border-sky-600', 'btn_hover': 'hover:bg-sky-300
+        dark:hover:bg-sky-800', 'btn_bg': 'bg-sky-50 dark:bg-sky-900/80
+        text-sky-700 dark:text-sky-300', 'main_text': 'text-slate-900
+        dark:text-slate-100', 'sub_text': 'text-slate-600 dark:text-slate-300',
+        'card_border': 'border-sky-200 dark:border-sky-900', 'sep':
+        'border-sky-200 dark:border-sky-900'} %} {% if item.platform ==
+        'Instagram' %} {% set theme = {'card_bg': 'bg-pink-100
+        dark:bg-pink-950/60', 'bg': 'bg-pink-200 dark:bg-pink-900', 'text':
+        'text-pink-800 dark:text-pink-200', 'border': 'border-pink-300
+        dark:border-pink-800', 'hover_border': 'hover:border-pink-400
+        dark:hover:border-pink-600', 'btn_hover': 'hover:bg-pink-300
+        dark:hover:bg-pink-800', 'btn_bg': 'bg-pink-50 dark:bg-pink-900/80
+        text-pink-700 dark:text-pink-300', 'main_text': 'text-slate-900
+        dark:text-slate-100', 'sub_text': 'text-slate-600 dark:text-slate-300',
+        'card_border': 'border-pink-200 dark:border-pink-900', 'sep':
+        'border-pink-200 dark:border-pink-900'} %} {% elif item.platform ==
+        'Twitter' or item.platform == 'X' %} {% set theme = {'card_bg':
+        'bg-slate-800 dark:bg-slate-800/90', 'bg': 'bg-slate-700
+        dark:bg-slate-700', 'text': 'text-white', 'border': 'border-slate-600',
+        'hover_border': 'hover:border-slate-500', 'btn_hover':
+        'hover:bg-slate-600', 'btn_bg': 'bg-slate-900 text-white', 'main_text':
+        'text-white', 'sub_text': 'text-slate-300', 'card_border':
+        'border-slate-700', 'sep': 'border-slate-700'} %} {% elif item.platform
+        == 'YouTube' %} {% set theme = {'card_bg': 'bg-red-800
+        dark:bg-red-950/80', 'bg': 'bg-red-700', 'text': 'text-white', 'border':
+        'border-red-600', 'hover_border': 'hover:border-red-500', 'btn_hover':
+        'hover:bg-red-600', 'btn_bg': 'bg-red-950 text-white', 'main_text':
+        'text-white', 'sub_text': 'text-red-200', 'card_border':
+        'border-red-900', 'sep': 'border-red-700'} %} {% endif %} {% set
+        is_failed = "Failed to generate & extract info" in item.summary %}
+
+        <div
+          class="glass-card {{ theme.card_bg }} rounded-2xl p-6 transition-transform hover:-translate-y-1 hover:shadow-2xl duration-300 flex flex-col h-full group border {{ theme.card_border }} {{ theme.hover_border }} relative {% if is_failed %} ring-2 ring-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.3)] {% endif %}"
+        >
+          {% if is_failed %}
+          <!-- Manual Edit Alert -->
+          <div
+            class="absolute -top-3 left-6 bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-lg flex items-center space-x-1 animate-pulse z-20"
+          >
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+            <span>NEEDS INFO</span>
+          </div>
+          {% endif %}
+
+          <!-- Hover Action Buttons -->
+          <div
+            class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 flex space-x-2"
+          >
+            <!-- Edit Button -->
+            <button
+              type="button"
+              data-id="{{ item.id }}"
+              data-summary="{{ item.summary }}"
+              data-category="{{ item.category }}"
+              class="edit-btn text-blue-500 hover:text-blue-700 p-1.5 bg-white/95 dark:bg-slate-800/95 rounded-full hover:bg-white border border-blue-100 dark:border-blue-900 transition-all shadow-md"
+              title="Edit Summary/Category"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </button>
+
+            <!-- Delete Button -->
+            <form action="/delete/{{ item.id }}" method="POST">
+              <button
+                type="submit"
+                onclick="
+                  return confirm(
+                    'Are you sure you want to permanently delete this saved link?',
+                  );
+                "
+                class="text-red-500 hover:text-red-700 p-1.5 bg-white/95 dark:bg-slate-800/95 rounded-full hover:bg-white border border-red-100 dark:border-red-900 transition-all shadow-md"
+                title="Delete Saved Link"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </form>
+          </div>
+
+          <div class="flex justify-between items-start mb-4 pr-24">
+            <span
+              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ theme.bg }} {{ theme.text }} border {{ theme.border }} shadow-sm"
+            >
+              {{ item.category }}
+            </span>
+            <span class="text-xs {{ theme.sub_text }} font-semibold pt-1"
+              >{{ item.created_at.strftime('%b %d, %Y') }}</span
+            >
+          </div>
+
+          <h3 class="text-xl font-bold {{ theme.main_text }} mb-3 leading-snug">
+            {{ item.summary }}
+          </h3>
+          <p
+            class="text-sm {{ theme.sub_text }} mb-6 line-clamp-3 leading-relaxed font-medium"
+          >
+            {{ item.raw_text }}
+          </p>
+
+          <div
+            class="mt-auto flex items-center justify-between pt-5 border-t {{ theme.sep }}"
+          >
+            <div class="flex items-center space-x-2 {{ theme.main_text }}">
+              <span class="text-sm font-bold">{{ item.platform }}</span>
+            </div>
+            <a
+              href="{{ item.url }}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center w-10 h-10 rounded-full {{ theme.btn_bg }} {{ theme.btn_hover }} transition-all transform group-hover:-translate-y-1 shadow-md border hover:border-transparent cursor-pointer"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                ></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div
+        class="text-center py-24 bg-white/60 dark:bg-slate-800/60 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 mt-12 shadow-sm"
+      >
+        <div
+          class="bg-slate-100 dark:bg-slate-700/50 h-24 w-24 rounded-full flex items-center justify-center mx-auto mb-6"
+        >
+          <svg
+            class="h-12 w-12 text-slate-400 dark:text-slate-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            ></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-200">
+          No saved links yet
+        </h3>
+        <p
+          class="mt-3 text-slate-500 dark:text-slate-400 font-medium text-lg max-w-md mx-auto"
+        >
+          Once you link your account using the code above, simply send links to
+          your Telegram bot to see them appear here instantly!
+        </p>
+      </div>
+      {% endif %}
     </div>
 
-    <!-- Content Grid -->
-    {% if items %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for item in items %}
-            
-            {% set theme = {'card_bg': 'bg-sky-100', 'bg': 'bg-sky-200', 'text': 'text-sky-800', 'border': 'border-sky-300', 'hover_border': 'hover:border-sky-400', 'btn_hover': 'hover:bg-sky-300', 'btn_bg': 'bg-sky-50 text-sky-700', 'main_text': 'text-slate-900', 'sub_text': 'text-slate-600', 'card_border': 'border-sky-200', 'sep': 'border-sky-200'} %}
-            
-            {% if item.platform == 'Instagram' %}
-                {% set theme = {'card_bg': 'bg-pink-100', 'bg': 'bg-pink-200', 'text': 'text-pink-800', 'border': 'border-pink-300', 'hover_border': 'hover:border-pink-400', 'btn_hover': 'hover:bg-pink-300', 'btn_bg': 'bg-pink-50 text-pink-700', 'main_text': 'text-slate-900', 'sub_text': 'text-slate-600', 'card_border': 'border-pink-200', 'sep': 'border-pink-200'} %}
-            {% elif item.platform == 'Twitter' or item.platform == 'X' %}
-                {% set theme = {'card_bg': 'bg-slate-800', 'bg': 'bg-slate-700', 'text': 'text-white', 'border': 'border-slate-600', 'hover_border': 'hover:border-slate-500', 'btn_hover': 'hover:bg-slate-600', 'btn_bg': 'bg-slate-900 text-white', 'main_text': 'text-white', 'sub_text': 'text-slate-300', 'card_border': 'border-slate-700', 'sep': 'border-slate-700'} %}
-            {% elif item.platform == 'YouTube' %}
-                {% set theme = {'card_bg': 'bg-red-800', 'bg': 'bg-red-700', 'text': 'text-white', 'border': 'border-red-600', 'hover_border': 'hover:border-red-500', 'btn_hover': 'hover:bg-red-600', 'btn_bg': 'bg-red-950 text-white', 'main_text': 'text-white', 'sub_text': 'text-red-200', 'card_border': 'border-red-900', 'sep': 'border-red-700'} %}
-            {% endif %}
-
-            {% set is_failed = "Failed to generate & extract info" in item.summary %}
-
-            <div class="glass-card {{ theme.card_bg }} rounded-2xl p-6 transition-transform hover:-translate-y-1 hover:shadow-2xl duration-300 flex flex-col h-full group border {{ theme.card_border }} {{ theme.hover_border }} relative {% if is_failed %} ring-2 ring-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.3)] {% endif %}">
-                
-                {% if is_failed %}
-                <!-- Manual Edit Alert -->
-                <div class="absolute -top-3 left-6 bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-lg flex items-center space-x-1 animate-pulse z-20">
-                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-                    <span>NEEDS INFO</span>
-                </div>
-                {% endif %}
-                
-                <!-- Hover Action Buttons -->
-                <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 flex space-x-2">
-                    <!-- Edit Button -->
-                    <button type="button" 
-                            data-id="{{ item.id }}"
-                            data-summary="{{ item.summary }}"
-                            data-category="{{ item.category }}"
-                            class="edit-btn text-blue-500 hover:text-blue-700 p-1.5 bg-white/95 rounded-full hover:bg-white border border-blue-100 transition-all shadow-md" 
-                            title="Edit Summary/Category">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </button>
-
-                    <!-- Delete Button -->
-                    <form action="/delete/{{ item.id }}" method="POST">
-                        <button type="submit" onclick="return confirm('Are you sure you want to permanently delete this saved link?');" class="text-red-500 hover:text-red-700 p-1.5 bg-white/95 rounded-full hover:bg-white border border-red-100 transition-all shadow-md" title="Delete Saved Link">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </form>
-                </div>
-
-                <div class="flex justify-between items-start mb-4 pr-24">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ theme.bg }} {{ theme.text }} border {{ theme.border }} shadow-sm">
-                        {{ item.category }}
-                    </span>
-                    <span class="text-xs {{ theme.sub_text }} font-semibold pt-1">{{ item.created_at.strftime('%b %d, %Y') }}</span>
-                </div>
-                
-                <h3 class="text-xl font-bold {{ theme.main_text }} mb-3 leading-snug">{{ item.summary }}</h3>
-                <p class="text-sm {{ theme.sub_text }} mb-6 line-clamp-3 leading-relaxed font-medium">{{ item.raw_text }}</p>
-                
-                <div class="mt-auto flex items-center justify-between pt-5 border-t {{ theme.sep }}">
-                    <div class="flex items-center space-x-2 {{ theme.main_text }}">
-                        <span class="text-sm font-bold">{{ item.platform }}</span>
-                    </div>
-                    <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" 
-                       class="inline-flex items-center justify-center w-10 h-10 rounded-full {{ theme.btn_bg }} {{ theme.btn_hover }} transition-all transform group-hover:-translate-y-1 shadow-md border hover:border-transparent cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="text-center py-24 bg-white/60 rounded-3xl border border-dashed border-slate-300 mt-12 shadow-sm">
-            <div class="bg-slate-100 h-24 w-24 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-slate-800">No saved links yet</h3>
-            <p class="mt-3 text-slate-500 font-medium text-lg max-w-md mx-auto">Once you link your account using the code above, simply send links to your Telegram bot to see them appear here instantly!</p>
-        </div>
-    {% endif %}
-</div>
-
-<!-- Edit Modal -->
-<div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200">
-        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-slate-800">Edit Saved Link</h3>
-            <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+    <!-- Edit Modal -->
+    <div
+      id="edit-modal"
+      class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[100] p-4"
+    >
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200 dark:border-slate-700"
+      >
+        <div
+          class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center"
+        >
+          <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">
+            Edit Saved Link
+          </h3>
+          <button
+            onclick="closeEditModal()"
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
         </div>
         <form id="edit-form" method="POST" class="p-6 space-y-4">
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-1">Summary</label>
-                <textarea id="edit-summary" name="summary" rows="3" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-4 focus:ring-sky-100 focus:border-sky-400 outline-none transition-all resize-none text-slate-800 text-sm font-medium" required></textarea>
-            </div>
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-1">Category</label>
-                <input type="text" id="edit-category" name="category" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-4 focus:ring-sky-100 focus:border-sky-400 outline-none transition-all text-slate-800 text-sm font-medium" required>
-            </div>
-            <div class="pt-2 flex space-x-3">
-                <button type="button" onclick="closeEditModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all">Cancel</button>
-                <button type="submit" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-all shadow-lg hover:shadow-xl">Save Changes</button>
-            </div>
+          <div>
+            <label
+              class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
+              >Summary</label
+            >
+            <textarea
+              id="edit-summary"
+              name="summary"
+              rows="3"
+              class="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:ring-4 focus:ring-sky-100 dark:focus:ring-sky-900/40 focus:border-sky-400 outline-none transition-all resize-none text-slate-800 dark:text-slate-100 text-sm font-medium"
+              required
+            ></textarea>
+          </div>
+          <div>
+            <label
+              class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1"
+              >Category</label
+            >
+            <input
+              type="text"
+              id="edit-category"
+              name="category"
+              class="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:ring-4 focus:ring-sky-100 dark:focus:ring-sky-900/40 focus:border-sky-400 outline-none transition-all text-slate-800 dark:text-slate-100 text-sm font-medium"
+              required
+            />
+          </div>
+          <div class="pt-2 flex space-x-3">
+            <button
+              type="button"
+              onclick="closeEditModal()"
+              class="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="flex-1 py-2.5 rounded-xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-bold hover:bg-slate-900 dark:hover:bg-white transition-all shadow-lg hover:shadow-xl"
+            >
+              Save Changes
+            </button>
+          </div>
         </form>
+      </div>
     </div>
-</div>
 
-<script>
-    // Global logic for the Edit Modal
-    const editModal = document.getElementById('edit-modal');
-    const editForm = document.getElementById('edit-form');
-    const editSummary = document.getElementById('edit-summary');
-    const editCategory = document.getElementById('edit-category');
+    <script>
+      // 1. Initialize Theme Preference
+      (function initTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
 
-    // Close on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeEditModal();
-    });
+        if (savedTheme === "dark" || (!savedTheme && systemPrefersDark)) {
+          document.documentElement.classList.add("dark");
+          document
+            .getElementById("theme-toggle-sun")
+            ?.classList.remove("hidden");
+          document.getElementById("theme-toggle-moon")?.classList.add("hidden");
+        } else {
+          document.documentElement.classList.remove("dark");
+          document.getElementById("theme-toggle-sun")?.classList.add("hidden");
+          document
+            .getElementById("theme-toggle-moon")
+            ?.classList.remove("hidden");
+        }
+      })();
 
-    // Close on clicking outside the modal content
-    editModal.addEventListener('click', function(e) {
+      // 2. Toggle Theme Function
+      function toggleDarkMode() {
+        const html = document.documentElement;
+        const sunIcon = document.getElementById("theme-toggle-sun");
+        const moonIcon = document.getElementById("theme-toggle-moon");
+
+        if (html.classList.contains("dark")) {
+          html.classList.remove("dark");
+          localStorage.setItem("theme", "light");
+          sunIcon.classList.add("hidden");
+          moonIcon.classList.remove("hidden");
+        } else {
+          html.classList.add("dark");
+          localStorage.setItem("theme", "dark");
+          sunIcon.classList.remove("hidden");
+          moonIcon.classList.add("hidden");
+        }
+      }
+
+      // 3. Edit Modal Functions
+      const editModal = document.getElementById("edit-modal");
+      const editForm = document.getElementById("edit-form");
+      const editSummary = document.getElementById("edit-summary");
+      const editCategory = document.getElementById("edit-category");
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeEditModal();
+      });
+
+      editModal.addEventListener("click", function (e) {
         if (e.target === editModal) closeEditModal();
-    });
+      });
 
-    function openEditModal(id, summary, category) {
-        editForm.action = '/edit/' + id;
+      function openEditModal(id, summary, category) {
+        editForm.action = "/edit/" + id;
         editSummary.value = summary;
         editCategory.value = category;
-        
-        editModal.classList.remove('hidden');
-        editModal.classList.add('flex');
-    }
 
-    function closeEditModal() {
-        editModal.classList.add('hidden');
-        editModal.classList.remove('flex');
-    }
+        editModal.classList.remove("hidden");
+        editModal.classList.add("flex");
+      }
 
-    // Attach listeners to all edit buttons
-    // We use event delegation or a simple loop for the dashboard items
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.edit-btn');
+      function closeEditModal() {
+        editModal.classList.add("hidden");
+        editModal.classList.remove("flex");
+      }
+
+      document.addEventListener("click", function (e) {
+        const btn = e.target.closest(".edit-btn");
         if (btn) {
-            const id = btn.getAttribute('data-id');
-            const summary = btn.getAttribute('data-summary');
-            const category = btn.getAttribute('data-category');
-            openEditModal(id, summary, category);
+          const id = btn.getAttribute("data-id");
+          const summary = btn.getAttribute("data-summary");
+          const category = btn.getAttribute("data-category");
+          openEditModal(id, summary, category);
         }
-    });
-</script>
+      });
 
-</body>
+      // 4. Telegram Connection Function
+      async function connectTelegramAccount() {
+        try {
+          const response = await fetch("/api/telegram/generate-link-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.telegram_url) {
+            window.open(data.telegram_url, "_blank");
+          } else {
+            alert(data.detail || "Failed to generate Telegram deep-link.");
+          }
+        } catch (err) {
+          console.error("Error generating Telegram link:", err);
+          alert("Could not connect to FastAPI server.");
+        }
+      }
+    </script>
+  </body>
 </html>

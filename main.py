@@ -1,9 +1,18 @@
 import os
 import asyncio
+import json
+import base64
+import secrets
+import urllib.parse
+import urllib.request
 from contextlib import asynccontextmanager
+from datetime import timedelta, datetime
+
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 from sqlmodel import Session, select
 from dotenv import load_dotenv
 
@@ -11,9 +20,14 @@ from database import engine, create_db_and_tables
 from models import SavedItem, User, CustomBucket
 from bot import start_bot
 from auth import verify_password, get_password_hash, create_access_token, decode_access_token
-from datetime import timedelta
 
 load_dotenv(override=True)
+
+# Google OAuth Credentials
+CLIENT_ID = os.getenv("CLIENT_ID") or os.getenv("GOOGLE_CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET") or os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,11 +45,11 @@ async def lifespan(app: FastAPI):
     if bot_task:
         bot_task.cancel()
 
-from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 templates = Jinja2Templates(directory="templates")
+
 
 def get_current_user(request: Request) -> User | None:
     token = request.cookies.get("access_token")
@@ -53,15 +67,30 @@ def get_current_user(request: Request) -> User | None:
         user = session.exec(select(User).where(User.username == username)).first()
         return user
 
+
+# Helper function ported from oauth_sandbox.py to decode Google ID Token (JWT)
+def decode_id_token(id_token_string: str) -> dict:
+    parts = id_token_string.split('.')
+    payload_b64 = parts[1]
+    payload_b64 += '=' * (-len(payload_b64) % 4)
+    decoded_bytes = base64.b64decode(payload_b64)
+    return json.loads(decoded_bytes.decode('utf-8'))
+
+
+# ==========================================
+# AUTHENTICATION ROUTES (LOGIN / REGISTER / GOOGLE OAUTH)
+# ==========================================
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, error: str = ""):
     return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "error": error})
+
 
 @app.post("/login")
 async def login_post(request: Request, username: str = Form(...), password: str = Form(...)):
     with Session(engine) as session:
         user = session.exec(select(User).where(User.username == username)).first()
-        if not user or not verify_password(password, user.hashed_password):
+        if not user or not user.hashed_password or not verify_password(password, user.hashed_password):
             return RedirectResponse(url="/login?error=Invalid username or password", status_code=status.HTTP_303_SEE_OTHER)
         
         access_token_expires = timedelta(minutes=60*24*7)
@@ -71,9 +100,11 @@ async def login_post(request: Request, username: str = Form(...), password: str 
         response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True, max_age=60*24*7*60)
         return response
 
+
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request, error: str = ""):
     return templates.TemplateResponse(request=request, name="register.html", context={"request": request, "error": error})
+
 
 @app.post("/register")
 async def register_post(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -88,11 +119,103 @@ async def register_post(request: Request, username: str = Form(...), password: s
         session.commit()
     return RedirectResponse(url="/login?error=Registration successful! Please login.", status_code=status.HTTP_303_SEE_OTHER)
 
+
 @app.get("/logout")
 async def logout():
     response = RedirectResponse(url="/login")
     response.delete_cookie("access_token")
     return response
+
+
+# ----------------------------------------------------
+# 🚀 GOOGLE OAUTH ROUTES (INTEGRATED FROM OAUTH_SANDBOX.PY)
+# ----------------------------------------------------
+
+@app.get("/auth/google/login")
+async def login_google():
+    if not CLIENT_ID or not CLIENT_SECRET:
+        raise HTTPException(status_code=500, detail="Google Client credentials missing in .env")
+
+    state = secrets.token_urlsafe(16)
+    auth_params = {
+        "client_id": CLIENT_ID,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "response_type": "code",
+        "scope": "openid profile email",
+        "state": state,
+        "access_type": "offline",
+        "prompt": "consent"
+    }
+    google_auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(auth_params)}"
+    return RedirectResponse(url=google_auth_url)
+
+
+@app.get("/auth/google/callback")
+async def auth_google_callback(request: Request, code: str = None):
+    if not code:
+        return RedirectResponse(url="/login?error=Authorization code missing from Google")
+
+    # 1. Exchange Auth Code for Tokens
+    token_endpoint = "https://oauth2.googleapis.com/token"
+    payload_data = urllib.parse.urlencode({
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": GOOGLE_REDIRECT_URI
+    }).encode('utf-8')
+
+    req = urllib.request.Request(token_endpoint, data=payload_data, method="POST")
+    req.add_header("Content-Type", "application/x-www-form-urlencoded")
+
+    try:
+        with urllib.request.urlopen(req) as response:
+            response_body = response.read().decode('utf-8')
+            tokens = json.loads(response_body)
+    except Exception as e:
+        print(f"Error exchanging token: {e}")
+        return RedirectResponse(url="/login?error=Failed to exchange code with Google")
+
+    id_token = tokens.get("id_token")
+    if not id_token:
+        return RedirectResponse(url="/login?error=Google did not return id_token")
+
+    # 2. Decode ID Token payload to extract email
+    user_data = decode_id_token(id_token)
+    email = user_data.get("email")
+
+    if not email:
+        return RedirectResponse(url="/login?error=Could not retrieve email from Google")
+
+    # 3. Fetch or Create User in DB
+    with Session(engine) as session:
+        user = session.exec(select(User).where(User.username == email)).first()
+
+        if not user:
+            random_password = secrets.token_hex(16)
+            hashed_pwd = get_password_hash(random_password)
+            user = User(username=email, hashed_password=hashed_pwd)
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+
+        # 4. Set Session Cookie and Redirect to Dashboard
+        access_token_expires = timedelta(minutes=60 * 24 * 7)
+        app_jwt = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+
+        response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+        response.set_cookie(
+            key="access_token",
+            value=f"Bearer {app_jwt}",
+            httponly=True,
+            max_age=60 * 24 * 7 * 60
+        )
+        return response
+
+
+# ==========================================
+# DASHBOARD & ITEM MANAGEMENT ROUTES
+# ==========================================
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request, q: str = "", platform: str = "", order: str = "newest"):
@@ -152,6 +275,7 @@ async def dashboard(request: Request, q: str = "", platform: str = "", order: st
         request=request, name="index.html", context={"items": items, "q": q, "user": user, "current_platform": platform, "order": order, "custom_buckets": custom_buckets, "bucket_counts": bucket_counts}
     )
 
+
 @app.post("/bucket/new")
 async def create_custom_bucket(request: Request, platform_name: str = Form(...)):
     user = get_current_user(request)
@@ -174,6 +298,7 @@ async def create_custom_bucket(request: Request, platform_name: str = Form(...))
             
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
+
 @app.post("/delete/{item_id}")
 async def delete_item(request: Request, item_id: int):
     user = get_current_user(request)
@@ -187,6 +312,7 @@ async def delete_item(request: Request, item_id: int):
             session.commit()
             
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
 
 @app.post("/edit/{item_id}")
 async def edit_item(
@@ -208,3 +334,87 @@ async def edit_item(
             session.commit()
             
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+
+# ==========================================
+# TELEGRAM BOT INTEGRATION ENDPOINTS
+# ==========================================
+
+# ----------------------------------------------------
+# DEPRECATED: OLD TELEGRAM LOGIN WIDGET AUTH
+# (Commented out in favor of Google OAuth + 1-Click Bot Deep Link)
+# ----------------------------------------------------
+# class TelegramAuthData(BaseModel):
+#     id: int
+#     first_name: str
+#     last_name: str | None = None
+#     username: str | None = None
+#     photo_url: str | None = None
+#     auth_date: int
+#     hash: str
+#
+# def verify_telegram_data(data_dict: dict) -> bool:
+#     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+#     received_hash = data_dict.pop("hash", None)
+#     if not received_hash or not bot_token:
+#         return False
+#     data_check_list = [f"{k}={v}" for k, v in data_dict.items() if v is not None]
+#     data_check_list.sort()
+#     data_check_string = "\n".join(data_check_list)
+#     secret_key = hashlib.sha256(bot_token.encode("utf-8")).digest()
+#     calculated_hash = hmac.new(secret_key, data_check_string.encode("utf-8"), hashlib.sha256).hexdigest()
+#     return hmac.compare_digest(calculated_hash, received_hash)
+#
+# @app.post("/api/auth/telegram")
+# async def telegram_auth(user: TelegramAuthData):
+#     user_dict = user.model_dump()
+#     if not verify_telegram_data(user_dict.copy()):
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid cryptographic signature.")
+#     telegram_id_str = str(user.id)
+#     with Session(engine) as session:
+#         db_user = session.exec(select(User).where(User.telegram_chat_id == telegram_id_str)).first()
+#         if not db_user:
+#             base_username = user.username or f"telegram_{user.id}"
+#             username = base_username
+#             existing = session.exec(select(User).where(User.username == username)).first()
+#             if existing:
+#                 username = f"{base_username}_{secrets.token_hex(4)}"
+#             random_password_hash = get_password_hash(secrets.token_hex(16))
+#             db_user = User(username=username, hashed_password=random_password_hash, telegram_chat_id=telegram_id_str)
+#             session.add(db_user)
+#             session.commit()
+#             session.refresh(db_user)
+#         access_token_expires = timedelta(minutes=60*24*7)
+#         access_token = create_access_token(data={"sub": db_user.username}, expires_delta=access_token_expires)
+#         response = JSONResponse(content={"status": "success", "message": "Authenticated successfully!"})
+#         response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True, max_age=60*24*7*60)
+#         return response
+
+
+# ACTIVE: 1-Click Telegram Deep-Linking Endpoint for index.html
+@app.post("/api/telegram/generate-link-url")
+def generate_telegram_link_url(request: Request):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Authentication required."
+        )
+
+    with Session(engine) as session:
+        db_user = session.get(User, user.id)
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Generate a single-use token valid for 10 minutes
+        token = f"connect_{secrets.token_urlsafe(16)}"
+        db_user.link_token = token
+        db_user.link_token_expires_at = datetime.utcnow() + timedelta(minutes=10)
+        
+        session.add(db_user)
+        session.commit()
+
+        bot_username = "bunny05_bot"  
+        telegram_url = f"https://t.me/{bot_username}?start={token}"
+
+        return {"telegram_url": telegram_url}

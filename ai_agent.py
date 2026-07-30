@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-from dotenv import load_dotenv
+from dotenv import load_dotenv  
 load_dotenv()
 def categorize_and_summarize(text: str, url: str):
     api_key = os.getenv("GEMINI_API_KEY")
