@@ -9,12 +9,12 @@ class User(SQLModel, table=True):
     hashed_password: str
     telegram_chat_id: Optional[str] = Field(default=None, index=True)
     link_code: str = Field(default_factory=lambda: str(uuid.uuid4())[:6].upper(), unique=True)
-    # inside models.py -> class User(SQLModel, table=True):
-    link_token: str | None = None
-    link_token_expires_at: datetime | None = None
-    
+    link_token: Optional[str] = None
+    link_token_expires_at: Optional[datetime] = None
+
     saved_items: List["SavedItem"] = Relationship(back_populates="user")
     custom_buckets: List["CustomBucket"] = Relationship(back_populates="user")
+
 
 class SavedItem(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -24,9 +24,10 @@ class SavedItem(SQLModel, table=True):
     category: str = Field(default="Uncategorized")
     raw_text: str = Field(default="")
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    
+
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
     user: Optional[User] = Relationship(back_populates="saved_items")
+
 
 class CustomBucket(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
