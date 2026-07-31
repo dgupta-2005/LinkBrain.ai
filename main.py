@@ -1,4 +1,5 @@
 import os
+import requests
 import asyncio
 import secrets
 import urllib.parse
@@ -22,7 +23,14 @@ load_dotenv(override=True)
 
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "http://localhost:8000").rstrip("/")
+# Dynamically detect environment: Production (Render) vs Localhost
+IS_RENDER = os.getenv("RENDER") == "true"
+
+if IS_RENDER:
+    BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "https://linkbrain-ai-aaih.onrender.com").rstrip("/")
+else:
+    BASE_URL = "http://localhost:8000"
+
 GOOGLE_REDIRECT_URI = f"{BASE_URL}/auth/google/callback"
 
 user_repo = UserRepository()
@@ -121,33 +129,43 @@ async def login_google():
 @app.get("/auth/google/callback")
 async def auth_google_callback(request: Request, code: str = None):
     if not code:
-        return RedirectResponse(url="/login?error=Authorization code missing")
+        return RedirectResponse(url="/login?error=Authorization code missing from Google")
 
+    # 1. Exchange Auth Code for Tokens using 'requests'
     token_endpoint = "https://oauth2.googleapis.com/token"
-    payload_data = urllib.parse.urlencode({
+    payload = {
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
         "code": code,
         "grant_type": "authorization_code",
         "redirect_uri": GOOGLE_REDIRECT_URI
-    }).encode('utf-8')
-
-    req = urllib.request.Request(token_endpoint, data=payload_data, method="POST")
-    req.add_header("Content-Type", "application/x-www-form-urlencoded")
+    }
 
     try:
-        with urllib.request.urlopen(req) as response:
-            tokens = json.loads(response.read().decode('utf-8'))
+        token_res = requests.post(token_endpoint, data=payload, timeout=10)
+        
+        # If Google rejects the code, log the exact error message to terminal
+        if token_res.status_code != 200:
+            print(f"❌ Google Token Exchange Error ({token_res.status_code}): {token_res.text}")
+            return RedirectResponse(url="/login?error=Failed to exchange code with Google")
+        
+        tokens = token_res.json()
     except Exception as e:
-        return RedirectResponse(url="/login?error=Failed to exchange code")
+        print(f"❌ Network Exception during Google token exchange: {e}")
+        return RedirectResponse(url="/login?error=Failed to exchange code with Google")
 
     id_token = tokens.get("id_token")
+    if not id_token:
+        return RedirectResponse(url="/login?error=Google did not return id_token")
+
+    # 2. Decode ID Token payload to extract user email
     user_data = AuthService.decode_id_token(id_token)
     email = user_data.get("email")
 
     if not email:
-        return RedirectResponse(url="/login?error=Could not retrieve email")
+        return RedirectResponse(url="/login?error=Could not retrieve email from Google")
 
+    # 3. Fetch or Create User via Repository
     user = user_repo.get_by_username(email)
     if not user:
         random_password = secrets.token_hex(16)
@@ -155,9 +173,15 @@ async def auth_google_callback(request: Request, code: str = None):
         user = User(username=email, hashed_password=hashed_pwd)
         user = user_repo.add(user)
 
-    app_jwt = AuthService.create_access_token(data={"sub": user.username})
+    # 4. Issue JWT Cookie & Redirect to Dashboard
+    access_token = AuthService.create_access_token(data={"sub": user.username})
     response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-    response.set_cookie(key="access_token", value=f"Bearer {app_jwt}", httponly=True, max_age=60*24*7*60)
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {access_token}",
+        httponly=True,
+        max_age=60 * 24 * 7 * 60
+    )
     return response
 
 # ==========================================

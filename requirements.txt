@@ -7,7 +7,7 @@ jinja2
 sqlmodel
 psycopg2-binary
 
-# Security & Authentication (Based on auth.py imports)
+# Security & Authentication
 bcrypt
 pyjwt
 passlib[bcrypt]
